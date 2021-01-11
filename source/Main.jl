@@ -9,6 +9,16 @@ include("GSVD_plots.jl")
 include("MNIST_28px_aux.jl")
 
 # ---------------------------------------------------------------------------
+# Definindo caminhos para importação e exportação de arquivos
+# ---------------------------------------------------------------------------
+
+# Define local para exportação dos plots como imagens
+output_path = string(pwd(), "/source/outputs/")
+
+# Define local onde estão armazenados os dados
+database_path = string(pwd(), "/source/databases/")
+
+# ---------------------------------------------------------------------------
 # Testes com classificador
 # ---------------------------------------------------------------------------
 
@@ -76,8 +86,7 @@ B = B_test
 
 
 
-# GSVD Normalizado
-U, V, Q, D1, D2, R = normalized_gsvd(A, B)
+show_relation_measures(D1, D2, output_path)
 
 # # Valores singulares e ordem dos componentes pos ordenamento
 # #alphas, betas, gsv_sorted_idx1 = alphas_betas(D1, D2, true)

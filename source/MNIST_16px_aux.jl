@@ -35,9 +35,7 @@ mosaicview(colorview(Gray,image_1),colorview(Gray,image_2); fillvalue=0, ncol=4,
 
 function bring_me_the_MNIST_2(filter=10)
   #
-
-  #
-  df = CSV.read("semeion.data")
+  df = CSV.read(string(database_path, "semeion.data"))
 
   #
   if       filter==0

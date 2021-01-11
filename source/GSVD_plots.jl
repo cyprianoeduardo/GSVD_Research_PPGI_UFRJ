@@ -25,8 +25,7 @@ using ORCA
 # Fracoes Generalizadas de Autoexpressao
 # ---------------------------------------------------------------------------
 
-# TODO - Implementar dinamismo nos marcadores dos eixos dos gŕaficos
-function show_relation_measures(D1, D2)
+function show_relation_measures(D1, D2, output_path)
     # Dadas as matrizes D1 e D2 da fatoracao GSVD(A,B), plota as metricas da 
     # Distancia Angular Antisimetrica e das Fracoes Generalizadas de 
     # Autoexpressao de A e B.
@@ -116,16 +115,16 @@ function show_relation_measures(D1, D2)
 
     # Plota metricas
     plot(p1, dpi = 600)
-    png("angular_distance.png")
+    png(string(output_path, "angular_distance.png"))
 
     plot(p3, dpi = 600)
-    png("fractions_B.png")
+    png(string(output_path, "fractions_B.png"))
 
     plot(p2, dpi = 600)
-    png("fractions_A.png")
+    png(string(output_path, "fractions_A.png"))
 
     plot(p1, p3, p2, layout=l1, dpi = 600)
-    png("measures.png")
+    png(string(output_path, "measures.png"))
 end
 
 # ------------------------------------------------------------------------------
