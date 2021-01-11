@@ -5,16 +5,17 @@
 # Devido a problemas anteriores com os resultados do GSVD, decorrentes de 
 # versoes antigas do LAPACK no OpenBLAS, estamos utilizando o Intel MKL BLAS
 # (<https://github.com/JuliaComputing/MKL.jl>)
+# Atentar que a versão 1.5 apresenta erro ao compilar o MKL. Portanto, 
+# estamos utilizando o Julia versão 1.4.
 
 # Instala o Intel MKL BLAS. Por favor, descomente se necessario.
-
 #using Pkg
 #pkg"add MKL"
 #pkg"build MKL"
 
 # Testa instalação do MKL
 using LinearAlgebra
-BLAS.vendor()
+println(BLAS.vendor())
 
 # ---------------------------------------------------------------------------
 # Bibliotecas
@@ -40,7 +41,7 @@ end
 # ---------------------------------------------------------------------------
 # Funcao para normalizar matrizes da fatoração GSVD
 # ---------------------------------------------------------------------------
-
+#TODO - Finalizar comentários
 function normalized_gsvd(A, B)
     # Dados duas matrizes A e B, executa o GSVD(A, B), normalizando os 
     # Componentes para que formem uma base.
@@ -59,19 +60,19 @@ function normalized_gsvd(A, B)
 
     X = (R * Q')'
     
-    X = X'     # GSVD = U * E * X' but we want to work with U * E * X
+    X = X'     # " GSVD = U * E * X' but we want to work with U * E * X "
     
-    # X is now genelets x arrays [rows x cols] 
-    # E(1,2) is now arraylets x genelets 
-    # U(1,2) is now genes x arraylets
+    # " X is now genelets x arrays [rows x cols] " 
+    # " E(1,2) is now arraylets x genelets "
+    # " U(1,2) is now genes x arraylets "
     
     X_rows = size(X)[1]
     X_cols = size(X)[2]
     
-    # Next; normalize the genelets so that we have a set of equal-length() 
+    # " Next; normalize the genelets so that we have a set of equal-length() 
     # basis vectors. This requires scaling the values of E(1,2) so that 
-    # we maintain M(1,2) = U(1,2) * E(1,2) * X
-    
+    # we maintain M(1,2) = U(1,2) * E(1,2) * X "
+
     normedX  = zeros(X_rows, X_cols) 
     normedE1 = zeros(size(E1)[1], size(E1)[2])
     normedE2 = zeros(size(E2)[1], size(E2)[2])
@@ -91,7 +92,6 @@ function normalized_gsvd(A, B)
     
     
     for i in 1:size(X)[1]
-        #len = sqrt(X[i, 1:X_cols] * X[i, 1:X_cols]')
         len = norm(X[i, 1:X_cols])
     
         normedX[i, 1:X_cols] = X[i,1:X_cols] ./ len

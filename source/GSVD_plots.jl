@@ -15,9 +15,7 @@ using Plots # necessario para plot de graficos
 using Images # necessario para manipulação de imagens
 using ImageCore # necessario para a funcao convert2image
 using ImageShow # necessario para imagens em mosaico de grandes densidades
-
-# REVIEW - Biblioteca ORCA é efetivamente necessária?
-using ORCA 
+using ORCA # necessario para salvar plots em .png 
 
 
 # ---------------------------------------------------------------------------
