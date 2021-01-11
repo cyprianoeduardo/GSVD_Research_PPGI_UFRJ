@@ -6,6 +6,7 @@ include("GSVD_measures.jl")
 include("GSVD_aux.jl")
 include("GSVD_classifications.jl")
 include("GSVD_plots.jl")
+include("MORAES_studentXterms.jl")
 include("MNIST_28px_aux.jl")
 
 # ---------------------------------------------------------------------------
@@ -57,10 +58,7 @@ database_path = string(pwd(), "/source/databases/")
 # Testes com Datasets Laura
 # ---------------------------------------------------------------------------
 
-# Instala bibliotecas externas. Por favor, descomente se necessario
-# using Pkg
-# pkg"add CSVFiles"
-# pkg"add DataFrames"
+# A, B = bring_me_studentsXterms(database_path)
 
 # using CSVFiles
 # using DataFrames
