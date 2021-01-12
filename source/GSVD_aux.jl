@@ -104,5 +104,5 @@ function normalized_gsvd(A, B)
     E1 = normedE1
     E2 = normedE2
 
-    return U1, U2, Q, E1, E2, R
+    return U1, U2, E1, E2, X
 end

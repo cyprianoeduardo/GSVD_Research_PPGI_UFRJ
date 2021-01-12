@@ -79,18 +79,16 @@ B = filter_data(data, label, 8)
 # ---------------------------------------------------------------------------
 
 # GSVD Normalizado
-U, V, Q, D1, D2, R = normalized_gsvd(A, B)
+U, V, D1, D2, X = normalized_gsvd(A, B)
 
 # # Imprime dimensoes
 # println("Size A: ", size(A))
 # println("Size B: ", size(B))
 # println("Size U: ", size(U))
 # println("Size V: ", size(V))
-# println("Size Q: ", size(Q))
 # println("Size D1: ", size(D1))
 # println("Size D2: ", size(D2))
-# println("Size R: ", size(R))
-# println("Size X: ", size((R * Q')))
+# println("Size X: ", size(X))
 
 # ---------------------------------------------------------------------------
 # Testes com metricas do GSVD
@@ -120,8 +118,6 @@ show_relation_measures(D1, D2, output_path)
 # Testes com plots do MNIST
 # ---------------------------------------------------------------------------
 
-# X = (R * Q')' 
-# X = X'
 # shared_dim_size = size(X)[2]
 
 # X = fig_examples_relation_feature_space(A, B, U, V, shared_dim_size)

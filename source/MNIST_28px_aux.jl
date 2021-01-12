@@ -115,12 +115,10 @@ function filter_data(data,label,filter)
 end
 
 #TODO - Criar função para fornecer pincéis de números
-# function fig_examples_relation_eigennumbers(A, B, U, V, R, Q, k = n)
+# function fig_examples_relation_eigennumbers(A, B, U, V, X, k = n)
 #   #
 
 #   # Tamanho da dimensão compartilhada
-#   X = (R * Q')' 
-#   X = X'
 #   n = size(X)[2]
 
 #   # Inicializa vetor de exemplos por componente
