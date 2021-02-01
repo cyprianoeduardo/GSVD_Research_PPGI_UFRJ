@@ -68,6 +68,7 @@ database_path = string(pwd(), "/source/databases/")
 # Testes com Dataset MNIST
 # ---------------------------------------------------------------------------
 
+# Extraindo o MNIST
 data, label = bring_me_the_MNIST()
 
 number1 = 3
@@ -88,15 +89,6 @@ B, B_means = centralizer(B)
 # GSVD Normalizado
 U, V, D1, D2, X = normalized_gsvd(A, B)
 
-# # Imprime dimensoes
-# println("Size A: ", size(A))
-# println("Size B: ", size(B))
-# println("Size U: ", size(U))
-# println("Size V: ", size(V))
-# println("Size D1: ", size(D1))
-# println("Size D2: ", size(D2))
-# println("Size X: ", size(X))
-
 # ---------------------------------------------------------------------------
 # Testes com metricas do GSVD
 # ---------------------------------------------------------------------------
@@ -116,16 +108,21 @@ gsv = alphas./betas
 # Testes com plots do MNIST
 # ---------------------------------------------------------------------------
 
+# # Levantando o tamanho da dimensão compartilhada
 # shared_dim_size = size(X)[2]
 
 # # Descentralizando A e B, para correto plot das imagens de exemplos.
 # A = filter_MNIST(data, label, number1)
 # B = filter_MNIST(data, label, number2)
 
+# # Extraindo os exemplos de amostras com maiores e menores variancias nos
+# # componentes, tanto para o dataset A quanto para o B
 # X2 = fig_examples_relation_feature_space(A, B, U, V, shared_dim_size)
 
+# # Reajustando exemplos no formato amostra por pixels
 # Y = examples_to_flatted_train(X2)
 
+# # Plotando exemplos
 # save(string(output_path, "A_B_examples.png"), show_me_the_MNIST(Y, shared_dim_size, 4))
 
 # ---------------------------------------------------------------------------

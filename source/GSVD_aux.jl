@@ -15,20 +15,21 @@
 
 # Testa instalação do MKL
 using LinearAlgebra
-println(BLAS.vendor())
+println("Using Julia version ", VERSION, " with BLAS ", BLAS.vendor())
 
 # ---------------------------------------------------------------------------
 # Bibliotecas
 # ---------------------------------------------------------------------------
 
 using LinearAlgebra #necessario para funcoes de Algebra Linear
+using Random # necessario para funcao shuffle()
 using Statistics # necessario para funcoes de centralizacao e normalizacao
 
 # ---------------------------------------------------------------------------
 # Funcao para dividir conjunto de dados em treino e teste
 # ---------------------------------------------------------------------------
 
-function partitionTrainTest(data, at = 0.7)
+function partition_train_test(data, at = 0.7)
     # Dado um conjunto de dados e um percentual, divide um conjunto de dados
     # entre teste e treino
     n = size(data)[1]

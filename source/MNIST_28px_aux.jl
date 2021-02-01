@@ -14,9 +14,9 @@ using DataDeps
 # Funcao para importar base de dados MNIST
 # ---------------------------------------------------------------------------
 
-#TODO - Comentar
 function bring_me_the_MNIST(samples = 60000)
-  #
+  # Dada uma quantidade de amostras, retorna o dataset MNIST em duas
+  # dimensoes, amostras por pixels, e suas respectivas classificacoes. 
 
   # Conjunto de treinamento train_x(28, 28, 60000) e train_y: (60000,)
   train_x, train_y = MNIST.traindata()
@@ -24,8 +24,11 @@ function bring_me_the_MNIST(samples = 60000)
   # Conjunto de teste test_x: (28, 28, 10000) e test_y: (10000,)
   #test_x,  test_y  = MNIST.testdata()
 
+  # Adequando a matriz de (28, 28, 60000) para (784, 60000)
   flatted_train_x = reshape(train_x, 784, 60000)
 
+  # Filtrando a quantidade de amostras e apresentando as amostras em linhas,
+  # ou seja, (60000, 784) ou (amostras, pixels) 
   flatted_train_x = Array(flatted_train_x[:, 1:samples]')
 
   return flatted_train_x, train_y[1:samples]
@@ -44,12 +47,14 @@ end
 
 #TODO - Comentar
 function convert_to_image(flatted_train_x)
-  #
+  # Dado o dataset MNIST (amostras por pixels), retorna sua representação 
+  # convertida em imagens.
 
   pixels = isqrt(size(flatted_train_x)[2])
   samples = size(flatted_train_x)[1]
   normal_train_x = reshape(flatted_train_x', (pixels, pixels, samples))
   images = MNIST.convert2image(normal_train_x)
+  
   return images
 end
 
