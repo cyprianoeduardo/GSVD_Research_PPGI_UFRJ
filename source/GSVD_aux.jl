@@ -22,7 +22,7 @@ println(BLAS.vendor())
 # ---------------------------------------------------------------------------
 
 using LinearAlgebra #necessario para funcoes de Algebra Linear
-using Random # necessario para funcoes sort
+using Statistics # necessario para funcoes de centralizacao e normalizacao
 
 # ---------------------------------------------------------------------------
 # Funcao para dividir conjunto de dados em treino e teste
@@ -105,4 +105,69 @@ function normalized_gsvd(A, B)
     E2 = normedE2
 
     return U1, U2, E1, E2, X
+end
+
+# ---------------------------------------------------------------------------
+# Funcao para centralizar matrizes
+# ---------------------------------------------------------------------------
+function zscoretransform(matrix)
+    #
+    
+    M = convert(Array{Float16}, deepcopy(matrix))
+    M_means = zeros(size(M)[2])
+    M_std = zeros(size(M)[2])
+
+    for i in 1:size(M)[2]
+        M_means[i] = mean(M[:,i])
+        M_std[i] = std(M[:,i])
+        if M_std[i] != 0
+            M[:,i] = (M[:,i] .- M_means[i]) ./ M_std[i]
+        else
+            M[:,i] = (M[:,i] .- M_means[i])
+        end
+    end
+
+    return M, M_means, M_std
+end
+
+function unzscoretransform(matrix, M_means, M_std)
+    #
+
+    M = deepcopy(matrix)
+
+    for i in 1:size(M)[2]
+        if M_std[i] != 0
+            M[:,i] = (M[:,i] .* M_std[i]) .+ M_means[i]
+        else
+            M[:,i] = M[:,i] .+ M_means[i]
+        end
+    end
+
+    return M
+end
+
+function centralizer(matrix)
+    
+    M = convert(Array{Float16}, deepcopy(matrix))
+    M_means = zeros(size(M)[2])
+
+    for i in 1:size(M)[2]
+        #M_means[i] = floor(Int8, mean(M[:,i]))
+        M_means[i] = mean(M[:,i])
+        M[:,i] = M[:,i] .- M_means[i]
+    end
+
+    return M, M_means
+end
+
+function decentralizer(matrix, M_means)
+    #
+
+    M = deepcopy(matrix)
+
+    for i in 1:size(M)[2]
+        M[:,i] = M[:,i] .+ M_means[i]
+    end
+
+    return M
 end

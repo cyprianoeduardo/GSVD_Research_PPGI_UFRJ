@@ -70,9 +70,16 @@ database_path = string(pwd(), "/source/databases/")
 
 data, label = bring_me_the_MNIST()
 
+number1 = 3
+number2 = 8
+
 # Filtrando MNIST por numeros
-A = filter_data(data, label, 3)
-B = filter_data(data, label, 8)
+A = filter_MNIST(data, label, number1)
+B = filter_MNIST(data, label, number2)
+
+# Centralizando datasets distintamente
+A, A_means = centralizer(A)
+B, B_means = centralizer(B)
 
 # ---------------------------------------------------------------------------
 # Testes com GSVD
@@ -120,6 +127,10 @@ gsv = alphas./betas
 
 # Escolhendo componente com distancia angular proxima a zero.
 idx_half = findfirst(x->(isapprox(x, 0; atol = pi / 256)), theta)
+
+# Descentralizando A e B, para correto plot das imagens de exemplos.
+A = filter_MNIST(data, label, number1)
+B = filter_MNIST(data, label, number2)
 
 # Plotando pincel com distancia angular proxima a zero e seu exemplo
 save(string(output_path, "brush_A_B_angular_",    idx_half,      "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, idx_half]))
