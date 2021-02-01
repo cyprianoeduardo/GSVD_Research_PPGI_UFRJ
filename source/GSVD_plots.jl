@@ -228,3 +228,62 @@ function show_examples_GSVD(A,B)
     end
     p1
 end
+
+# ---------------------------------------------------------------------------
+# Funcao para visualizar centralizacao dos dados
+# ---------------------------------------------------------------------------
+
+function show_means(A_means, B_means, output_path)
+  # Dadas as medias das colunas de A e B, plota as respectivas.
+  
+  # Inicializa motor grafico de plotagem
+  plotly()
+
+  # Plot da Fracao Generalizada de Autoexpressao de A
+  p1 = bar(A_means,
+    orientation='h',
+    title = "Médias das Colunas de A",
+    xlabel = "Médias",
+    #ylabel = "Colunas",
+    xlims = (+0.01),
+    xrotation = 60,
+    leg = false,
+    titlefontsize = 7,
+    title_location = :center,
+    tickfontsize = 6,
+    legendfontsize = 6,
+    guidefontsize = 6,
+    legendtitlefontsize = 6
+  )
+
+  # Plot da Fracao Generalizada de Autoexpressao de B
+  p2 = bar(B_means,
+    orientation='h',
+    title = "Médias das Colunas de B",
+    xlabel = "Médias",
+    ylabel = "Colunas",
+    xlims = (+0.01),
+    xrotation = 60,
+    leg = false,
+    titlefontsize = 7,
+    title_location = :center,
+    tickfontsize = 6,
+    legendfontsize = 6,
+    guidefontsize = 6,
+    legendtitlefontsize = 6
+  )
+
+  # Define leiaute de visualizacao dos plots 
+  l1 = @layout[a b]
+
+  # Plota metricas
+
+  # plot(p2, dpi = 600)
+  # png(string(output_path, "means_B.png"))
+
+  # plot(p1, dpi = 600)
+  # png(string(output_path, "means_A.png"))
+
+  plot(p2, p1, layout=l1, dpi = 600)
+  png(string(output_path, "means_pre_centralization.png"))
+end

@@ -82,6 +82,9 @@ B = filter_MNIST(data, label, number2)
 A, A_means = centralizer(A)
 B, B_means = centralizer(B)
 
+# Visualizando as medias de A e B, antes da centralizacao
+show_means(A_means, B_means, output_path)
+
 # ---------------------------------------------------------------------------
 # Testes com GSVD
 # ---------------------------------------------------------------------------
