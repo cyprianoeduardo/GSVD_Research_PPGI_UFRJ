@@ -26,8 +26,9 @@ function bring_me_the_MNIST(samples = 60000)
 
   flatted_train_x = reshape(train_x, 784, 60000)
 
+  flatted_train_x = Array(flatted_train_x[:, 1:samples]')
 
-  return Array(flatted_train_x[:, 1:samples]'), train_y[1:samples]
+  return flatted_train_x, train_y[1:samples]
 end
 
 #TODO - Comentar
@@ -77,8 +78,8 @@ function fig_examples_relation_feature_space(A, B, U, V, n)
 
   end
 
-  #return examples
-  return getindex(examples)
+  return examples
+  #return getindex(examples)
 end
 
 #TODO - Comentar
@@ -91,17 +92,20 @@ function examples_to_flatted_train(examples)
       images = hcat(images, examples[i][j][:])
     end
   end
-  return images[:, 2:size(images)[2]]
+  return images[:, 2:size(images)[2]]'
 end
 
-#TODO - Comentar
-function filter_data(data,label,filter)
-  # Dado um conjunto de dados, sua classificacao e um valor de filtro, retorna
-  # um novo conjunto de dados com apenas classificacoes filtradas por linhas.
+# ------------------------------------------------------------------------------
+# Funcao para filtrar as amostras do MNIST
+# ------------------------------------------------------------------------------
+
+function filter_MNIST(data, label, filter)
+  # Dado o dataset MNIST (amostras X pixels), sua classificacao e um valor de 
+  # filtro, retorna um novo dataset apenas com as classificacoes, filtradas por
+  # linhas.
 
   # Vetor de dados filtrados
-  #filtered_data = reshape([],0,size(data)[2])
-  filtered_data =Array{N0f8}(undef, 0, size(data)[2])
+  filtered_data = Array{N0f8}(undef, 0, size(data)[2])
 
   # Concatena as linhas com identificadores iguais ao filtro
   for i in 1:length(label)

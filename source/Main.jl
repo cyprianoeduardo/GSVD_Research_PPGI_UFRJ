@@ -118,6 +118,16 @@ gsv = alphas./betas
 
 # shared_dim_size = size(X)[2]
 
+# # Descentralizando A e B, para correto plot das imagens de exemplos.
+# A = filter_MNIST(data, label, number1)
+# B = filter_MNIST(data, label, number2)
+
+# X2 = fig_examples_relation_feature_space(A, B, U, V, shared_dim_size)
+
+# Y = examples_to_flatted_train(X2)
+
+# save(string(output_path, "A_B_examples.png"), show_me_the_MNIST(Y, shared_dim_size, 4))
+
 # ---------------------------------------------------------------------------
 # Escolhendo e plotando pinceis e respectivos exemplos
 # ---------------------------------------------------------------------------
