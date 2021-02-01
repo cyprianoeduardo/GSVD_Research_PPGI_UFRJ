@@ -126,4 +126,73 @@ function generalized_fractions_eigenexpression(alphas, betas, idx = false)
     end
 end
 
+# ---------------------------------------------------------------------------
+# Funcao para escolher os melhores valores singulares de A e B
+# ---------------------------------------------------------------------------
+# TODO - Elaborar modos 2 e 3 da função
+function best_sv_idx(mode, alpha, betas, theta, P1, P2, theta_lim = pi/4)
+    # Dado um modo de atuação, os valores singulares do GSVD de A e B, suas 
+    # distancias angulares, respectivas autoexpressoes e um limite para 
+    # distancia angular, fornece uma lista de indices ordenados dos 
+    # "melhores" valores singulares para escolher pinceis. Pinceis são as 
+    # linhas da matriz compartilhada da decomposição do GSVD.
+    # Os modos da funcao direcionam a definicao de melhor:
+    #
+    # Modo 1:  Busca componentes com maior autoexpressao e distancia angular
+    # aceitavel;
+    #
+    # Modo 2:
+    #
+    # Modo 3: 
+
+    if mode == 1
+   
+        # Lista de distâncias angulares que indiquem similaridade entre os 
+        # datasets, compreendidos tal que -theta_lim <= x <= theta_lim.
+        sv_ad_list = filter(x -> ((x >= -theta_lim) && (x <= theta_lim)), theta)
+        #println("sv_ad_list: ", sv_ad_list) # apenas para debug
+
+        # Lista de índices das distâncias angulares filtradas
+        sv_ad_idx_list = indexin(sv_ad_list, theta)
+        #println("sv_ad_idx_list: ", sv_ad_idx_list) # apenas para debug
+
+        # Lista de fracoes de autoexpressao, correspondentes as distancias 
+        # angulares filtradas. 
+        sv_ae_list = getindex(P1, sv_ad_idx_list)
+        #println("sv_ae_list: ", sv_ae_list) # apenas para debug
+
+        # Ordena lista de fracoes de autoexpressao
+        sv_ae_list = sort(sv_ae_list, rev = true)
+        #println("sv_ae_list ordened: ", sv_ae_list) # apenas para debug
+
+        # Lista de índices das fracoes de autoexpressao ordenadas
+        sv_ae_idx_list = indexin(sv_ae_list, P1)
+        #println("sv_ae_idx_list: ", sv_ae_idx_list) # apenas para debug
+
+        # FIXME - As frações de autoexpressao têm que considerar P2. Provavelmente buscar algum P1/P2 próximo a 1.
+        
+        # FIXME - Função indexin() retorna o índice do primeiro valor que faz match, o que pode ocasionar um range externo ao filtrado.
+        # Ex.:  Sejam   thetas          = [-20, -10, 0, 10, 20, 30]
+        #               theta_lim       = 10
+        #               alphas          = [0.2, 0.2, 0.05, 0.4, 0.05, 0.3]
+        #
+        # É retornado   sv_ad_list      = [-10, 0, 10]
+        #               sv_ad_idx_list  = [2, 3, 4]
+        #               sv_ae_list      = [0.4, 0.2, 0.05]
+        #               sv_ae_idx_list  = [4, 1, 3]
+        #
+        # Analisando as variáveis sv_ad_idx_list e sv_ae_idx_list, percebe-se que o índice 1 não pertence a ambos índices.
+
+    elseif mode == 2
+        #
+
+    elseif mode == 3
+        #
+
+    end
+
+    # retorna lista de indices
+    return sv_ae_idx_list 
+end
+
 # TODO - Criar testes das funcoes

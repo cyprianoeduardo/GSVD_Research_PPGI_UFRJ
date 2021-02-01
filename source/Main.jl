@@ -97,22 +97,13 @@ U, V, D1, D2, X = normalized_gsvd(A, B)
 # Plota metricas
 show_relation_measures(D1, D2, output_path)
 
-# # Valores singulares e ordem dos componentes pos ordenamento
-# #alphas, betas, gsv_sorted_idx = alphas_betas(D1, D2, true)
+# Valores singulares e ordem dos componentes pos ordenamento
+alphas, betas, gsv_sorted_idx = alphas_betas(D1, D2, true)
 
-# # Calcula metricas
-# theta = antisymmetric_angular_distance(alphas./betas)
-# P1, P2 = generalized_fractions_eigenexpression(alphas, betas)
-# gsv = alphas./betas
-
-# # Imprime dimensoes
-# println("Size alphas: ", size(alphas))
-# println("Size betas: ", size(betas))
-# println("Size gsv_sorted_idx: ", size(gsv_sorted_idx))
-# println("Size theta: ", size(theta))
-# println("Size P1: ", size(P1))
-# println("Size P2: ", size(P2))
-# println("Size gsv: ", size(gsv))
+# Calcula metricas
+theta = antisymmetric_angular_distance(alphas./betas)
+P1, P2 = generalized_fractions_eigenexpression(alphas, betas)
+gsv = alphas./betas
 
 # ---------------------------------------------------------------------------
 # Testes com plots do MNIST
@@ -120,8 +111,33 @@ show_relation_measures(D1, D2, output_path)
 
 # shared_dim_size = size(X)[2]
 
-# X = fig_examples_relation_feature_space(A, B, U, V, shared_dim_size)
+# ---------------------------------------------------------------------------
+# Escolhendo e plotando pinceis e respectivos exemplos
+# ---------------------------------------------------------------------------
 
-# Y = examples_to_flatted_train(X)
+# # Escolhendo os melhores valores singulares 
+# idx = best_sv_idx(1, alpha, betas, theta, P1, P2, pi / 32)
 
-# save(string(output_path, "examples.png"), show_me_the_MNIST(Y', length(X), 4))
+# Escolhendo componente com distancia angular proxima a zero.
+idx_half = findfirst(x->(isapprox(x, 0; atol = pi / 256)), theta)
+
+# Plotando pincel com distancia angular proxima a zero e seu exemplo
+save(string(output_path, "brush_A_B_angular_",    idx_half,      "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, idx_half]))
+save(string(output_path, "brush_A_B_angular_",    idx_half,      "_component exampleA.png"),                 convert_to_image(A)[:, :, argmax(U[:, idx_half])])
+save(string(output_path, "brush_A_B_angular_",    idx_half,      "_component exampleB.png"),                 convert_to_image(B)[:, :, argmax(V[:, idx_half])])
+
+# Plotando pincel com distancia angular maxima para A e seu exemplo
+save(string(output_path, "brush_A_max_angular_",  argmax(theta), "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, argmax(theta)]))
+save(string(output_path, "brush_A_max_angular_",  argmax(theta), "_component example.png"),                  convert_to_image(A)[:, :, argmax(U[:, argmax(theta)])])
+
+# Plotando pincel com distancia angular maxima para B e seu exemplo
+save(string(output_path, "brush_B_max_angular_",  argmin(theta), "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, argmin(theta)]))
+save(string(output_path, "brush_B_max_angular_",  argmin(theta), "_component example.png"),                  convert_to_image(B)[:, :, argmax(V[:, argmin(theta)])])
+
+# Plotando pincel com fracao de autoexpressao maxima para A e seu exemplo
+save(string(output_path, "brush_A_max_fraction_", argmax(P1),    "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, argmax(P1)]))
+save(string(output_path, "brush_A_max_fraction_", argmax(P1),    "_component example.png"),                  convert_to_image(A)[:, :, argmax(U[:, argmax(P1)])])
+
+# Plotando pincel com fracao de autoexpressao maxima para B e seu exemplo
+save(string(output_path, "brush_B_max_fraction_", argmax(P2),    "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, argmax(P2)]))
+save(string(output_path, "brush_B_max_fraction_", argmax(P2),    "_component example.png"),                  convert_to_image(B)[:, :, argmax(V[:, argmax(P2)])])

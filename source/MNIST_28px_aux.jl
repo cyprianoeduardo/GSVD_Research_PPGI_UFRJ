@@ -113,29 +113,3 @@ function filter_data(data,label,filter)
   # Retorna dados filtrados
   return Array(filtered_data)
 end
-
-#TODO - Criar função para fornecer pincéis de números
-# function fig_examples_relation_eigennumbers(A, B, U, V, X, k = n)
-#   #
-
-#   # Tamanho da dimensão compartilhada
-#   n = size(X)[2]
-
-#   # Inicializa vetor de exemplos por componente
-#   examples=[]
-
-#   # Exemplos com maior e menor expressividade, componente a componente
-#   for i in 1:k
-
-#     # Indices dos maiores e menores fenomenos por componente e dataset
-#     max_A = #TODO - Criar função para trazer índice dos valores singulares
-#     max_B = #TODO - Criar função para trazer índice dos valores singulares
-
-#     # Calcula vetor de exemplos por componente
-#     push!(examples, [Array(B[max_B, :]), Array(A[max_A, :])])
-
-#   end
-
-#   #return examples
-#   return getindex(examples)
-# end
