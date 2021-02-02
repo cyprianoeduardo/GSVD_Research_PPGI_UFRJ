@@ -129,7 +129,7 @@ gsv = alphas./betas
 # save(string(output_path, "A_B_examples.png"), show_me_the_MNIST(Y, shared_dim_size, 4))
 
 # ---------------------------------------------------------------------------
-# Escolhendo e plotando pinceis e respectivos exemplos
+# Escolhendo e plotando pinceis do GSVD e respectivos exemplos
 # ---------------------------------------------------------------------------
 
 # # Escolhendo os melhores valores singulares 
@@ -165,3 +165,27 @@ save(string(output_path, "brush_B_max_fraction_", argmax(P2),    "_component exa
 
 # Plotando pinceis medios de A e B
 show_mean_brush(A, B, output_path)
+
+# ---------------------------------------------------------------------------
+# Escolhendo e plotando pinceis do SVD e respectivos exemplos
+# ---------------------------------------------------------------------------
+
+# # Centralizando datasets distintamente
+A, A_means = centralizer(A)
+B, B_means = centralizer(B)
+
+# Calculando o SVD
+U_A, S_A, V_A = svd(A)
+U_B, S_B, V_B = svd(B)
+
+# Descentralizando dataset, para correto plot das imagens de exemplos.
+A = filter_MNIST(data, label, number1)
+B = filter_MNIST(data, label, number2)
+
+# Plotando pincel com valor singular mais relevante para A e seu exemplo
+save(string(output_path, "SVD_brush_A_", 1,    "_component.png"),          map(clamp01nan, convert_to_image(V_A')[:, :, 1]))
+save(string(output_path, "SVD_brush_A_", 1,    "_component example.png"),                  convert_to_image(A)[:, :, argmax(U_A[:, 1])])
+
+# Plotando pincel com valor singular mais relevante para A e seu exemplo
+save(string(output_path, "SVD_brush_B_", 1,    "_component.png"),          map(clamp01nan, convert_to_image(V_B')[:, :, 1]))
+save(string(output_path, "SVD_brush_B_", 1,    "_component example.png"),                  convert_to_image(B)[:, :, argmax(U_B[:, 1])])
