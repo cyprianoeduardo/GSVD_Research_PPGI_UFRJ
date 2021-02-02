@@ -122,3 +122,32 @@ function filter_MNIST(data, label, filter)
   # Retorna dados filtrados
   return Array(filtered_data)
 end
+
+# ------------------------------------------------------------------------------
+# Funcao para calcular pinceis medios de A e B
+# ------------------------------------------------------------------------------
+
+function show_mean_brush(A, B, output_path)
+  # Dado um dataset amostras por pixel, plota seu pincel medio.
+  
+  # Inicializa pinceis medios
+  mean_brush_A = zeros(size(A)[2])
+  mean_brush_B = zeros(size(B)[2])
+
+  # Soma todas as amostras em A e B
+  for i in 1:size(A)[1]
+    mean_brush_A = mean_brush_A + A[i, :]
+  end
+  for i in 1:size(B)[1]
+    mean_brush_B = mean_brush_B + B[i, :]
+  end
+
+  # Divide valores pela quantidade de amostras
+  mean_brush_A = mean_brush_A ./ size(A)[1]
+  mean_brush_B = mean_brush_B ./ size(B)[1]
+
+  # Plota pinceis medios de A e B
+  save(string(output_path, "mean_brush_A.png"), map(clamp01nan, convert_to_image(mean_brush_A')))
+  save(string(output_path, "mean_brush_B.png"), map(clamp01nan, convert_to_image(mean_brush_B')))
+  
+end

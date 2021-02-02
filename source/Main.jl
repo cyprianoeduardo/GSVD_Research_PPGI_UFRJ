@@ -162,3 +162,6 @@ save(string(output_path, "brush_A_max_fraction_", argmax(P1),    "_component exa
 # Plotando pincel com fracao de autoexpressao maxima para B e seu exemplo
 save(string(output_path, "brush_B_max_fraction_", argmax(P2),    "_component.png"),          map(clamp01nan, convert_to_image(X)[:, :, argmax(P2)]))
 save(string(output_path, "brush_B_max_fraction_", argmax(P2),    "_component example.png"),                  convert_to_image(B)[:, :, argmax(V[:, argmax(P2)])])
+
+# Plotando pinceis medios de A e B
+show_mean_brush(A, B, output_path)
