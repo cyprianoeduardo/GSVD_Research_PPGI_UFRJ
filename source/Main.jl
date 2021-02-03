@@ -189,6 +189,7 @@ B, B_means = centralizer(B)
 # Calculando o SVD
 U_A, S_A, V_A = svd(A)
 U_B, S_B, V_B = svd(B)
+U_AB, S_AB, V_AB = svd(AB)
 
 # Descentralizando dataset, para correto plot das imagens de exemplos.
 A = filter_MNIST(data, label, number1)
@@ -201,3 +202,7 @@ save(string(output_path, "SVD_brush_A_", 1,    "_component example.png"),       
 # Plotando pincel com valor singular mais relevante para A e seu exemplo
 save(string(output_path, "SVD_brush_B_", 1,    "_component.png"),          map(clamp01nan, convert_to_image(V_B')[:, :, 1]))
 save(string(output_path, "SVD_brush_B_", 1,    "_component example.png"),                  convert_to_image(B)[:, :, argmax(U_B[:, 1])])
+
+# Plotando pincel com valor singular mais relevante para A e seu exemplo
+save(string(output_path, "SVD_brush_AB_", 1,    "_component.png"),          map(clamp01nan, convert_to_image(V_AB')[:, :, 1]))
+save(string(output_path, "SVD_brush_AB_", 1,    "_component example.png"),                  convert_to_image(AB)[:, :, argmax(U_AB[:, 1])])
