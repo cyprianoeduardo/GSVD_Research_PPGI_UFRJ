@@ -78,9 +78,17 @@ number2 = 8
 A = filter_MNIST(data, label, number1)
 B = filter_MNIST(data, label, number2)
 
-# Centralizando datasets distintamente
-A, A_means = centralizer(A)
-B, B_means = centralizer(B)
+# # Centralizando datasets distintamente
+# A, A_means = centralizer(A)
+# B, B_means = centralizer(B)
+
+# Centralizando stack
+AB = vcat(A, B)
+
+AB, AB_means = centralizer(AB)
+
+A = AB[1:size(A)[1], :]
+B = AB[1:size(B)[1], :]
 
 # Visualizando as medias de A e B, antes da centralizacao
 show_means(A_means, B_means, output_path)
