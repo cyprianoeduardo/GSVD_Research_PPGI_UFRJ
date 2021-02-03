@@ -132,6 +132,10 @@ gsv = alphas./betas
 # Escolhendo e plotando pinceis do GSVD e respectivos exemplos
 # ---------------------------------------------------------------------------
 
+# # Verificando se o GSVD do Julia plota pinceis interpretaveis
+# U, V, Q, D1, D2, R = svd(A, B)
+# X = R*Q'
+
 # # Escolhendo os melhores valores singulares 
 # idx = best_sv_idx(1, alpha, betas, theta, P1, P2, pi / 32)
 
