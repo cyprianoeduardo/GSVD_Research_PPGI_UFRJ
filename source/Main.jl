@@ -8,6 +8,7 @@ include("GSVD_classifications.jl")
 include("GSVD_plots.jl")
 include("MORAES_studentXterms.jl")
 include("MNIST_28px_aux.jl")
+include("MNIST_16px_aux.jl")
 
 # ---------------------------------------------------------------------------
 # Definindo caminhos para importação e exportação de arquivos
@@ -71,8 +72,8 @@ database_path = string(pwd(), "/source/databases/")
 # Extraindo o MNIST
 data, label = bring_me_the_MNIST()
 
-number1 = 3
-number2 = 8
+number1 = 0
+number2 = 1
 
 # Filtrando MNIST por numeros
 A = filter_MNIST(data, label, number1)
@@ -82,6 +83,9 @@ B = filter_MNIST(data, label, number2)
 # A, A_means = centralizer(A)
 # B, B_means = centralizer(B)
 
+# # Visualizando as medias de A e B, antes da centralizacao
+# show_means(A_means, B_means, output_path)
+
 # Centralizando stack
 AB = vcat(A, B)
 
@@ -89,9 +93,6 @@ AB, AB_means = centralizer(AB)
 
 A = AB[1:size(A)[1], :]
 B = AB[1:size(B)[1], :]
-
-# Visualizando as medias de A e B, antes da centralizacao
-show_means(A_means, B_means, output_path)
 
 # ---------------------------------------------------------------------------
 # Testes com GSVD

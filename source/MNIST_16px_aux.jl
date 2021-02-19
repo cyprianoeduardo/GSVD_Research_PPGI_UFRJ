@@ -8,20 +8,20 @@
 #Pkg.add("DataFrames")
 #Pkg.add("ImageView")
 using CSV
+using CSVFiles
 using DataFrames
-using ImageView
+#using ImageView
 
 # ---------------------------------------------------------------------------
 # Funcao para importar base de dados
 # ---------------------------------------------------------------------------
 #TODO - Testar
 #TODO - Comentar
-function bring_me_the_MNIST_16px(filter = 10, database_path)
+function bring_me_the_MNIST_16px(database_path, filter = 10)
   #
   # UCI 1592x256             Classifications on [:,257:266]
 
-  #
-  df = CSV.read(string(database_path, "semeion.data"))
+  df = DataFrame(CSV.File(string(database_path, "semeion.data")))
 
   #
   if       filter==0
