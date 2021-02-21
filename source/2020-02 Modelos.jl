@@ -92,12 +92,7 @@ database_path = string(pwd(), "/source/databases/")
 # ---------------------------------------------------------------------------
 function test_models(T, Q, Ct, Cq)
     # Retorna vetor com resultados dos modelos
-    # println("Size T:", size(T))
-    # println("Size Q:", size(Q))
-    # println("Size pinv(T):", size(pinv(T)))
-    # println("Size T':", size(T'))
-    # println("Size Ct:", size(Ct))
-    # println("Size Cq:", size(Cq))
+
     results = []
     push!(results, norm((Q  * pinv(T)) - (Cq       * Ct))) # Modelo 1
     push!(results, norm((Q  * T')      - (Cq       * Ct))) # Modelo 2
@@ -123,10 +118,6 @@ function best_alg(T, Q, output_path)
 
     # Algoritmo 1
     U, S, V = svd(Q * pinv(T))
-    # println("Size U:", size(U))
-    # println("Size diagm(S):", size(diagm(S)))
-    # println("Size V:", size(V))
-    # println("Size sqrt(S):", size(sqrt.(diagm(S))))
     svd_knee(S, output_path)
     k1 = input("Please analyze the SVD knee graph and provide a value for K:")
     Ct = sqrt.(diagm(S[1:k1])) * V[:, 1:k1]'
@@ -142,29 +133,33 @@ function best_alg(T, Q, output_path)
     results = vcat(results, test_models(T, Q, Ct, Cq))
     
     # TODO - Verificar como escrever o algoritmo do GSVD
-    # Algoritmo 3 # Não é prioridade
-    # U1, U2, E1, E2, X = normalized_gsvd(T, Q)
+    # # Algoritmo 3 # Não é prioridade
+    # U, V, Q, E1, E2, R = svd(T, Q)
+    # X = R * Q'
+    # # U1, U2, E1, E2, X = normalized_gsvd(T, Q)
     # Ct = U1 * E1 * X
     # Cq = U2 * E2
-    # results = vcat(results, test_models(T, Q, Ct, Cq))
+    # # results = vcat(results, test_models(T, Q, Ct, Cq))
 
-    # FIXME - pinv(T) gera números negativos! NNMF exige apenas valores positivos!
+    # REVIEW - pinv(T) gera números negativos! NNMF exige apenas valores positivos, certo?!
+    # Retornava erro com a função anterior: H, W = nnmf(Q * pinv(T), k1)
     # Algoritmo 4
-    # H, W = nnmf(Q * pinv(T), k1)
-    # Cq = H
-    # Ct = W
-    # results = vcat(results, test_models(T, Q, Ct, Cq))
+    W, H = NMF.randinit(Q * pinv(T), k1) # initialize
+    NMF.solve!(NMF.ProjectedALS{Float64}(maxiter=50), Q * pinv(T), W, H) # optimize
+    Ct = H
+    Cq = W
+    results = vcat(results, test_models(T, Q, Ct, Cq))
 
-    # FIXME - Erro eps() ?!
-    # # Algoritmo 5
-    # H, W = nnmf(Q * T', k2)
-    # Cq = H
-    # Ct = W
-    # results = vcat(results, test_models(T, Q, Ct, Cq))
+    # Algoritmo 5
+    W, H = NMF.randinit(Q * T', k2) # initialize
+    NMF.solve!(NMF.ProjectedALS{Float64}(maxiter=50), Q * T', W, H) # optimize
+    Ct = H
+    Cq = W
+    results = vcat(results, test_models(T, Q, Ct, Cq))
 
     # Apresenta os resultados
-    println("O melhor é o Algoritmo ", argmin(results)[1], " no Modelo ", argmin(results)[2])
     println(convert(DataFrame, results))
+    println("O melhor é o Algoritmo ", argmin(results)[1], " no Modelo ", argmin(results)[2])
 
     return results
 end
