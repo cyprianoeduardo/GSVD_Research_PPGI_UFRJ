@@ -113,7 +113,7 @@ end
 # ---------------------------------------------------------------------------
 # Funcao para criar tabela de resultados de testes e mostrar melhor algoritmo
 # ---------------------------------------------------------------------------
-function best_alg(T, Q, output_path, k1 = 5, k2 = 5)
+function best_alg(T, Q, output_path, k1 = 0, k2 = 0)
     # Dados duas matrizes com uma dimensão em comum, verifica a precisão de 
     # Algoritmos com os Modelos propostos. 
 
@@ -205,8 +205,8 @@ println("Size Users  X Movies:", size(T))
 println("Size Genres X Movies:", size(Q))
 
 # Definindo joelhos da curva
-k1 = 20
-k2 = 20
+k1 = 0
+k2 = 0
 
 # Verificando resultados
 println("- Raw data:")
