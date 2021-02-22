@@ -113,53 +113,86 @@ end
 # ---------------------------------------------------------------------------
 # Funcao para criar tabela de resultados de testes e mostrar melhor algoritmo
 # ---------------------------------------------------------------------------
-function best_alg(T, Q, output_path)
-    # Calcula a diferença entre os modelos propostos
+function best_alg(T, Q, output_path, k1 = 5, k2 = 5)
+    # Dados duas matrizes com uma dimensão em comum, verifica a precisão de 
+    # Algoritmos com os Modelos propostos. 
+
+    # Necessário para resolver o erro "ERROR: MethodError: no method 
+    # matching eigen(::Adjoint{Float64,Array{Float64,2}})" em funcoes da 
+    # biblioteca LinearAlgebra.
+    # Ref.: https://github.com/JuliaLang/julia/issues/28714
+    T = copy(T)
+    Q = copy(Q)
 
     # Algoritmo 1
+    println("Running Algorithm 1")
     U, S, V = svd(Q * pinv(T))
-    svd_knee(S, output_path)
-    k1 = input("Please analyze the SVD knee graph and provide a value for K:")
-    Ct = sqrt.(diagm(S[1:k1])) * V[:, 1:k1]'
-    Cq = U[:, 1:k1] * sqrt.(diagm(S[1:k1]))
+    if k1 == 0
+        svd_knee(S, output_path)
+        k1 = input("Please analyze the SVD knee graph and provide a value for K:")
+    end
+    Ct = sqrt(diagm(S[1:k1])) * V[:, 1:k1]'
+    Cq = U[:, 1:k1] * sqrt(diagm(S[1:k1]))
     results = test_models(T, Q, Ct, Cq)
 
     # Algoritmo 2
+    println("Running Algorithm 2")
     U, S, V = svd(Q * T')
-    svd_knee(S, output_path)
-    k2 = input("Please analyze the SVD knee graph and provide a value for K:")
-    Ct = sqrt.(diagm(S[1:k2])) * V[:, 1:k2]'
-    Cq = U[:, 1:k2] * diagm(S[1:k2])
+    if k2 == 0
+        svd_knee(S, output_path)
+        k2 = input("Please analyze the SVD knee graph and provide a value for K:")
+    end
+    Ct = sqrt(diagm(S[1:k2])) * V[:, 1:k2]'
+    Cq = U[:, 1:k2] * sqrt(diagm(S[1:k2]))
     results = vcat(results, test_models(T, Q, Ct, Cq))
     
-    # TODO - Verificar como escrever o algoritmo do GSVD
-    # # Algoritmo 3 # Não é prioridade
-    # U, V, Q, E1, E2, R = svd(T, Q)
-    # X = R * Q'
-    # # U1, U2, E1, E2, X = normalized_gsvd(T, Q)
-    # Ct = U1 * E1 * X
-    # Cq = U2 * E2
-    # # results = vcat(results, test_models(T, Q, Ct, Cq))
+    # REVIEW - Verificar como reduzir a dimensão
+    # FIXME - Verificar dimensões de Ct e Cq, pois ocorre erro no primeiro modelo
+    # Algoritmo 3
+    println("Not Running Algorithm 3")
+    # U, V, Q2, E1, E2, R = svd(T, Q)
+    # X = R * Q2'
+    # TQ = [U * E1; V * E2] * X
+    # Ct = TQ[1:size(T)[1], :]
+    # Cq = TQ[1:size(Q)[1], :]
+    # println("Size T", size(T))
+    # println("Size Q", size(Q))
+    # println("Size Ct", size(Ct))
+    # println("Size Cq", size(Cq))
+    # results = vcat(results, test_models(T, Q, Ct, Cq))
+    results = vcat(results, [Inf Inf Inf Inf])
 
-    # REVIEW - pinv(T) gera números negativos! NNMF exige apenas valores positivos, certo?!
-    # Retornava erro com a função anterior: H, W = nnmf(Q * pinv(T), k1)
     # Algoritmo 4
-    W, H = NMF.randinit(Q * pinv(T), k1) # initialize
-    NMF.solve!(NMF.ProjectedALS{Float64}(maxiter=50), Q * pinv(T), W, H) # optimize
-    Ct = H
-    Cq = W
-    results = vcat(results, test_models(T, Q, Ct, Cq))
+    println("Running Algorithm 4")
+    try
+        r = nnmf((Q * pinv(T)), k1; alg=:multmse, maxiter=30, tol=1.0e-4)
+        W = r.W
+        H = r.H
+        Ct = H
+        Cq = W
+        results = vcat(results, test_models(T, Q, Ct, Cq))
+    catch e
+        println("Algorithm 4 didn't run because data isn't positive.")
+        results = vcat(results, [Inf Inf Inf Inf])
+    end
 
     # Algoritmo 5
-    W, H = NMF.randinit(Q * T', k2) # initialize
-    NMF.solve!(NMF.ProjectedALS{Float64}(maxiter=50), Q * T', W, H) # optimize
-    Ct = H
-    Cq = W
-    results = vcat(results, test_models(T, Q, Ct, Cq))
+    println("Running Algorithm 5")
+    try
+        r = nnmf((Q * T'), k2; alg=:multmse, maxiter=30, tol=1.0e-4)
+        W = r.W
+        H = r.H
+        Ct = H
+        Cq = W
+        results = vcat(results, test_models(T, Q, Ct, Cq))
+    catch e
+        println("Algorithm 5 didn't run because data isn't positive.")
+        results = vcat(results, [Inf Inf Inf Inf])
+    end
 
     # Apresenta os resultados
     println(convert(DataFrame, results))
-    println("O melhor é o Algoritmo ", argmin(results)[1], " no Modelo ", argmin(results)[2])
+    println("The best is Algorithm ", argmin(results)[1], " in Model ", argmin(results)[2])
 
     return results
 end
@@ -167,13 +200,60 @@ end
 # Extraindo matrizes do Movielens
 dfT, dfQ, T, Q = bring_me_MOVIELENS(database_path)
 
-# Apresentando dimensões
-println("Usuários X Filmes:", size(T))
-println("Gêneros X Filmes:", size(Q))
+# Apresentando dimensoes
+println("Size Users  X Movies:", size(T))
+println("Size Genres X Movies:", size(Q))
+
+# Definindo joelhos da curva
+k1 = 20
+k2 = 20
 
 # Verificando resultados
-results = best_alg(T, Q, output_path)
+println("- Raw data:")
+results = best_alg(T, Q, output_path, k1, k2)
 
-# TODO - Verificar onde alocar a matriz S. Calcular a raiz e inserir em Ct e Cq?
-# TODO - Testar centralizações e normalizações das entradas
+# ---------------------------------------------------------------------------
+# Testando centralizacoes e normalizacoes das entradas
+# ---------------------------------------------------------------------------
+
+# Centralizando dados
+T, T_means = centralizer(T)
+Q, Q_means = centralizer(Q)
+
+# Verificando resultados
+println("- Centralized data:")
+results = best_alg(T, Q, output_path, k1, k2)
+
+
+# Centralizando stack
+TQ = vcat(T, Q)
+TQ, TQ_means = centralizer(TQ)
+T = TQ[1:size(T)[1], :]
+Q = TQ[1:size(Q)[1], :]
+
+# Verificando resultados
+println("- Centralized stack data:")
+results = best_alg(T, Q, output_path, k1, k2)
+
+
+# Normalizando dados
+T, T_means, T_std = zscoretransform(T)
+Q, Q_means, Q_std = zscoretransform(Q)
+
+# Verificando resultados
+println("- Standardized data:")
+results = best_alg(T, Q, output_path, k1, k2)
+
+
+# Normalizando stack
+TQ = vcat(T, Q)
+TQ, TQ_means, TQ_std = zscoretransform(TQ)
+T = TQ[1:size(T)[1], :]
+Q = TQ[1:size(Q)[1], :]
+
+# Verificando resultados
+println("- Standardized stack data:")
+results = best_alg(T, Q, output_path, k1, k2)
+
+
 # TODO - Testar com matrizes sintéticas
