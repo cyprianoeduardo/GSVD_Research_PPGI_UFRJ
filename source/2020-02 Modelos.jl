@@ -88,16 +88,35 @@ database_path = string(pwd(), "/source/databases/")
 # ou GSVD(T, Q) Algoritmo 3
 
 # ---------------------------------------------------------------------------
+# Reunião 23-02-2020
+# ---------------------------------------------------------------------------
+
+# INPUT:
+#
+# A = Usuarios X Filmes
+# B = Generos X Filmes
+#
+# OUTPUT:
+#
+# Ca = Conceitos X Usuarios
+# Cb = Conceitos X Generos
+#
+# MODELOS:
+#                    G X F   F X U      G X C      C X U
+# Modelo 1: MIN norm((B    * pinv(A)) - (pinv(Cb)*  Ca))
+#
+#                    C X U   U X F      C X G      G X F
+# Modelo 2: MIN norm(Ca    * A)       - (Cb      * B )))
+
+# ---------------------------------------------------------------------------
 # Funcao para teste de algoritmos com modelos propostos
 # ---------------------------------------------------------------------------
-function test_models(T, Q, Ct, Cq)
+function test_models(A, B, Ca, Cb)
     # Retorna vetor com resultados dos modelos
 
     results = []
-    push!(results, norm((Q  * pinv(T)) - (Cq       * Ct))) # Modelo 1
-    push!(results, norm((Q  * T')      - (Cq       * Ct))) # Modelo 2
-    push!(results, norm((Ct * T)       - (pinv(Cq) * Q ))) # Modelo 3
-    push!(results, norm((Ct * T)       - (Cq'      * Q ))) # Modelo 4
+    push!(results, norm((B  * pinv(A)) - (pinv(Cb) * Ca))) # Modelo 1
+    push!(results, norm((Ca * A)       - (Cb       * B ))) # Modelo 2
 
     return results'
 end
@@ -113,81 +132,150 @@ end
 # ---------------------------------------------------------------------------
 # Funcao para criar tabela de resultados de testes e mostrar melhor algoritmo
 # ---------------------------------------------------------------------------
-function best_alg(T, Q, output_path, k1 = 0, k2 = 0)
+function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
     # Dados duas matrizes com uma dimensão em comum, verifica a precisão de 
     # Algoritmos com os Modelos propostos. 
 
     # Necessário para resolver o erro "ERROR: MethodError: no method 
-    # matching eigen(::Adjoint{Float64,Array{Float64,2}})" em funcoes da 
+    # matching function(::Adjoint{Float64,Array{Float64,2}})" em funcoes da 
     # biblioteca LinearAlgebra.
     # Ref.: https://github.com/JuliaLang/julia/issues/28714
-    T = copy(T)
-    Q = copy(Q)
+    A = copy(A)
+    B = copy(B)
 
     # Algoritmo 1
     println("Running Algorithm 1")
-    U, S, V = svd(Q * pinv(T))
-    if k1 == 0
+    U, S, V = svd(B * pinv(A))
+    if k == 0
         svd_knee(S, output_path)
-        k1 = input("Please analyze the SVD knee graph and provide a value for K:")
+        k = input("Please analyze the SVD knee graph and provide a value for K:")
     end
-    Ct = sqrt(diagm(S[1:k1])) * V[:, 1:k1]'
-    Cq = U[:, 1:k1] * sqrt(diagm(S[1:k1]))
-    results = test_models(T, Q, Ct, Cq)
+    # Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
+    # Cb = U[:, 1:k] * sqrt(diagm(S[1:k]))
+    Ca = V[:, 1:k]'
+    Cb = pinv(U[:, 1:k])
+    results = test_models(A, B, Ca, Cb)
 
     # Algoritmo 2
     println("Running Algorithm 2")
-    U, S, V = svd(Q * T')
-    if k2 == 0
-        svd_knee(S, output_path)
-        k2 = input("Please analyze the SVD knee graph and provide a value for K:")
+    try
+        if nnegative == true
+            r = nnmf(abs.(B * pinv(A)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        else
+            r = nnmf(    (B * pinv(A)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        end
+        W = r.W
+        H = r.H
+        Ca = H
+        Cb = pinv(W)
+        results = vcat(results, test_models(A, B, Ca, Cb))
+    catch e
+        println("Algorithm 2 didn't run because data isn't positive.")
+        results = vcat(results, fill(Inf, (1, qt_models)))
     end
-    Ct = sqrt(diagm(S[1:k2])) * V[:, 1:k2]'
-    Cq = U[:, 1:k2] * sqrt(diagm(S[1:k2]))
-    results = vcat(results, test_models(T, Q, Ct, Cq))
-    
+
+    # Algoritmo 3
     # REVIEW - Verificar como reduzir a dimensão
-    # FIXME - Verificar dimensões de Ct e Cq, pois ocorre erro no primeiro modelo
+    # FIXME - Verificar dimensões de Ca e Cb, pois ocorre erro no primeiro modelo
     # Algoritmo 3
     println("Not Running Algorithm 3")
-    # U, V, Q2, E1, E2, R = svd(T, Q)
-    # X = R * Q2'
-    # TQ = [U * E1; V * E2] * X
-    # Ct = TQ[1:size(T)[1], :]
-    # Cq = TQ[1:size(Q)[1], :]
-    # println("Size T", size(T))
-    # println("Size Q", size(Q))
-    # println("Size Ct", size(Ct))
-    # println("Size Cq", size(Cq))
-    # results = vcat(results, test_models(T, Q, Ct, Cq))
-    results = vcat(results, [Inf Inf Inf Inf])
+    # U, V, Q, E1, E2, R = svd(A, B)
+    # X = R * Q'
+    # AB = [U * E1; V * E2] * X
+    # Ca = AB[1:size(A)[1], :]
+    # Cb = AB[1:size(B)[1], :]
+    # println("Size A", size(A))
+    # println("Size B", size(B))
+    # println("Size Ca", size(Ca))
+    # println("Size Cb", size(Cb))
+    # results = vcat(results, test_models(A, B, Ca, Cb))
+    results = vcat(results, fill(Inf, (1, qt_models)))
 
-    # Algoritmo 4
-    println("Running Algorithm 4")
+    # Algoritmo 4 - 1.1
+    println("Running Algorithm 1.1 pinv(A) e U'")
+    U, S, V = svd(B * pinv(A))
+    if k == 0
+        svd_knee(S, output_path)
+        k = input("Please analyze the SVD knee graph and provide a value for K:")
+    end
+    Ca = V[:, 1:k]'
+    Cb = U[:, 1:k]'
+    results = vcat(results, test_models(A, B, Ca, Cb))
+
+    # Algoritmo 5 - 1.2
+    println("Running Algorithm 1.2 A' e pinv(U)")
+    U, S, V = svd(B * A')
+    if k == 0
+        svd_knee(S, output_path)
+        k = input("Please analyze the SVD knee graph and provide a value for K:")
+    end
+    Ca = V[:, 1:k]'
+    Cb = pinv(U[:, 1:k])
+    results = vcat(results, test_models(A, B, Ca, Cb))
+
+    # Algoritmo 6 - 1.3
+    println("Running Algorithm 1.3 A' e U'")
+    U, S, V = svd(B * A')
+    if k == 0
+        svd_knee(S, output_path)
+        k = input("Please analyze the SVD knee graph and provide a value for K:")
+    end
+    Ca = V[:, 1:k]'
+    Cb = U[:, 1:k]'
+    results = vcat(results, test_models(A, B, Ca, Cb))
+
+    # Algoritmo 7 - 2.1
+    println("Running Algorithm 2.1 pinv(A) e W'")
     try
-        r = nnmf((Q * pinv(T)), k1; alg=:multmse, maxiter=30, tol=1.0e-4)
+        if nnegative == true
+            r = nnmf(abs.(B * pinv(A)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        else
+            r = nnmf(    (B * pinv(A)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        end
         W = r.W
         H = r.H
-        Ct = H
-        Cq = W
-        results = vcat(results, test_models(T, Q, Ct, Cq))
+        Ca = H
+        Cb = W'
+        results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 4 didn't run because data isn't positive.")
-        results = vcat(results, [Inf Inf Inf Inf])
+        println("Algorithm 2.1 didn't run because data isn't positive.")
+        results = vcat(results, fill(Inf, (1, qt_models)))
     end
 
-    # Algoritmo 5
-    println("Running Algorithm 5")
+    # Algoritmo 8 - 2.2
+    println("Running Algorithm 2.2 A' e pinv(W)")
     try
-        r = nnmf((Q * T'), k2; alg=:multmse, maxiter=30, tol=1.0e-4)
+        if nnegative == true
+            r = nnmf(abs.(B * A'), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        else
+            r = nnmf(    (B * A'), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        end
         W = r.W
         H = r.H
-        Ct = H
-        Cq = W
-        results = vcat(results, test_models(T, Q, Ct, Cq))
+        Ca = H
+        Cb = pinv(W)
+        results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 5 didn't run because data isn't positive.")
-        results = vcat(results, [Inf Inf Inf Inf])
+        println("Algorithm 2.2 didn't run because data isn't positive.")
+        results = vcat(results, fill(Inf, (1, qt_models)))
+    end
+
+    # Algoritmo 9 - 2.3
+    println("Running Algorithm 2.3 A' e W'")
+    try
+        if nnegative == true
+            r = nnmf(abs.(B * A'), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        else
+            r = nnmf(    (B * A'), k; alg=:projals, maxiter=30, tol=1.0e-4)
+        end
+        W = r.W
+        H = r.H
+        Ca = H
+        Cb = W'
+        results = vcat(results, test_models(A, B, Ca, Cb))
+    catch e
+        println("Algorithm 2.3 didn't run because data isn't positive.")
+        results = vcat(results, fill(Inf, (1, qt_models)))
     end
 
     # Apresenta os resultados
@@ -198,62 +286,62 @@ function best_alg(T, Q, output_path, k1 = 0, k2 = 0)
 end
 
 # Extraindo matrizes do Movielens
-dfT, dfQ, T, Q = bring_me_MOVIELENS(database_path)
+dfA, dfB, A, B = bring_me_MOVIELENS(database_path)
 
 # Apresentando dimensoes
-println("Size Users  X Movies:", size(T))
-println("Size Genres X Movies:", size(Q))
+println("Size Users  X Movies:", size(A))
+println("Size Genres X Movies:", size(B))
 
-# Definindo joelhos da curva
-k1 = 0
-k2 = 0
+# Definindo joelho da curva
+k = 20
+nnegative = true
 
 # Verificando resultados
 println("- Raw data:")
-results = best_alg(T, Q, output_path, k1, k2)
+results = best_alg(A, B, output_path, k, nnegative)
 
 # ---------------------------------------------------------------------------
 # Testando centralizacoes e normalizacoes das entradas
 # ---------------------------------------------------------------------------
 
 # Centralizando dados
-T, T_means = centralizer(T)
-Q, Q_means = centralizer(Q)
+A, A_means = centralizer(A)
+B, B_means = centralizer(B)
 
 # Verificando resultados
 println("- Centralized data:")
-results = best_alg(T, Q, output_path, k1, k2)
+results = best_alg(A, B, output_path, k, nnegative)
 
 
 # Centralizando stack
-TQ = vcat(T, Q)
-TQ, TQ_means = centralizer(TQ)
-T = TQ[1:size(T)[1], :]
-Q = TQ[1:size(Q)[1], :]
+AB = vcat(A, B)
+AB, AB_means = centralizer(AB)
+A = AB[1:size(A)[1], :]
+B = AB[1:size(B)[1], :]
 
 # Verificando resultados
 println("- Centralized stack data:")
-results = best_alg(T, Q, output_path, k1, k2)
+results = best_alg(A, B, output_path, k, nnegative)
 
 
 # Normalizando dados
-T, T_means, T_std = zscoretransform(T)
-Q, Q_means, Q_std = zscoretransform(Q)
+A, A_means, A_std = zscoretransform(A)
+B, B_means, B_std = zscoretransform(B)
 
 # Verificando resultados
 println("- Standardized data:")
-results = best_alg(T, Q, output_path, k1, k2)
+results = best_alg(A, B, output_path, k, nnegative)
 
 
 # Normalizando stack
-TQ = vcat(T, Q)
-TQ, TQ_means, TQ_std = zscoretransform(TQ)
-T = TQ[1:size(T)[1], :]
-Q = TQ[1:size(Q)[1], :]
+AB = vcat(A, B)
+AB, AB_means, AB_std = zscoretransform(AB)
+A = AB[1:size(A)[1], :]
+B = AB[1:size(B)[1], :]
 
 # Verificando resultados
 println("- Standardized stack data:")
-results = best_alg(T, Q, output_path, k1, k2)
+results = best_alg(A, B, output_path, k, nnegative)
 
 
 # TODO - Testar com matrizes sintéticas
