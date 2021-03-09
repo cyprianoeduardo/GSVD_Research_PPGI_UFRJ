@@ -316,8 +316,8 @@ results = best_alg(A, B, output_path, k, nnegative)
 # Centralizando stack
 AB = vcat(A, B)
 AB, AB_means = centralizer(AB)
-A = AB[1:size(A)[1], :]
-B = AB[1:size(B)[1], :]
+A = AB[           1:size(A )[1], :]
+B = AB[size(A)[1]+1:size(AB)[1], :]
 
 # Verificando resultados
 println("- Centralized stack data:")
@@ -336,8 +336,8 @@ results = best_alg(A, B, output_path, k, nnegative)
 # Normalizando stack
 AB = vcat(A, B)
 AB, AB_means, AB_std = zscoretransform(AB)
-A = AB[1:size(A)[1], :]
-B = AB[1:size(B)[1], :]
+A = AB[           1:size(A )[1], :]
+B = AB[size(A)[1]+1:size(AB)[1], :]
 
 # Verificando resultados
 println("- Standardized stack data:")

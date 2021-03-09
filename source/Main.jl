@@ -91,8 +91,8 @@ AB = vcat(A, B)
 
 AB, AB_means = centralizer(AB)
 
-A = AB[1:size(A)[1], :]
-B = AB[1:size(B)[1], :]
+A = AB[           1:size(A )[1], :]
+B = AB[size(A)[1]+1:size(AB)[1], :]
 
 # ---------------------------------------------------------------------------
 # Testes com GSVD
