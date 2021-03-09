@@ -150,10 +150,8 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         svd_knee(S, output_path)
         k = input("Please analyze the SVD knee graph and provide a value for K:")
     end
-    # Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
-    # Cb = U[:, 1:k] * sqrt(diagm(S[1:k]))
-    Ca = V[:, 1:k]'
-    Cb = pinv(U[:, 1:k])
+    Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
+    Cb = pinv(U[:, 1:k] * sqrt(diagm(S[1:k])))
     results = test_models(A, B, Ca, Cb)
 
     # Algoritmo 2
@@ -170,7 +168,7 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         Cb = pinv(W)
         results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 2 didn't run because data isn't positive.")
+        println("Algorithm 2 didn't run because a error. Ex: Didn't converge, data isn't positive.")
         results = vcat(results, fill(Inf, (1, qt_models)))
     end
 
@@ -198,8 +196,8 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         svd_knee(S, output_path)
         k = input("Please analyze the SVD knee graph and provide a value for K:")
     end
-    Ca = V[:, 1:k]'
-    Cb = U[:, 1:k]'
+    Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
+    Cb = (U[:, 1:k] * sqrt(diagm(S[1:k])))'
     results = vcat(results, test_models(A, B, Ca, Cb))
 
     # Algoritmo 5 - 1.2
@@ -209,8 +207,8 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         svd_knee(S, output_path)
         k = input("Please analyze the SVD knee graph and provide a value for K:")
     end
-    Ca = V[:, 1:k]'
-    Cb = pinv(U[:, 1:k])
+    Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
+    Cb = pinv(U[:, 1:k] * sqrt(diagm(S[1:k])))
     results = vcat(results, test_models(A, B, Ca, Cb))
 
     # Algoritmo 6 - 1.3
@@ -220,8 +218,8 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         svd_knee(S, output_path)
         k = input("Please analyze the SVD knee graph and provide a value for K:")
     end
-    Ca = V[:, 1:k]'
-    Cb = U[:, 1:k]'
+    Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]'
+    Cb = (U[:, 1:k] * sqrt(diagm(S[1:k])))'
     results = vcat(results, test_models(A, B, Ca, Cb))
 
     # Algoritmo 7 - 2.1
@@ -238,7 +236,7 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         Cb = W'
         results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 2.1 didn't run because data isn't positive.")
+        println("Algorithm 2.1 didn't run because a error. Ex: Didn't converge, data isn't positive.")
         results = vcat(results, fill(Inf, (1, qt_models)))
     end
 
@@ -256,7 +254,7 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         Cb = pinv(W)
         results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 2.2 didn't run because data isn't positive.")
+        println("Algorithm 2.2 didn't run because a error. Ex: Didn't converge, data isn't positive.")
         results = vcat(results, fill(Inf, (1, qt_models)))
     end
 
@@ -274,9 +272,38 @@ function best_alg(A, B, output_path, k = 0, nnegative = false, qt_models = 2)
         Cb = W'
         results = vcat(results, test_models(A, B, Ca, Cb))
     catch e
-        println("Algorithm 2.3 didn't run because data isn't positive.")
+        println("Algorithm 2.3 didn't run because a error. Ex: Didn't converge, data isn't positive.")
         results = vcat(results, fill(Inf, (1, qt_models)))
     end
+
+    # # Algoritmo 10
+    # println("Running Algorithm 4")
+    # U, S, V = svd(vcat(A, B)) # G  U                          U+G  F
+    # if k == 0
+    #     svd_knee(S, output_path)
+    #     k = input("Please analyze the SVD knee graph and provide a value for K:")
+    # end
+    # Ca = sqrt(diagm(S[1:k])) * V[:, 1:k]' # C  U              C  F
+    # Cb = pinv(U[:, 1:k] * sqrt(diagm(S[1:k]))) # C  G         C  U+G
+    # results = test_models(A, B, Ca, Cb)
+
+    # # Algoritmo 11
+    # println("Running Algorithm 5")
+    # try
+    #     if nnegative == true
+    #         r = nnmf(abs.(vcat(A, B)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+    #     else
+    #         r = nnmf(    (vcat(A, B)), k; alg=:projals, maxiter=30, tol=1.0e-4)
+    #     end
+    #     W = r.W
+    #     H = r.H
+    #     Ca = H
+    #     Cb = pinv(W)
+    #     results = vcat(results, test_models(A, B, Ca, Cb))
+    # catch e
+    #     println("Algorithm 2 didn't run because a error. Ex: Didn't converge, data isn't positive.")
+    #     results = vcat(results, fill(Inf, (1, qt_models)))
+    # end
 
     # Apresenta os resultados
     println(convert(DataFrame, results))
